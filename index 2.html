@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>iPhone</title>
+<script>
+/* ===== 只改这里 / CONFIG =====
+ 文字字段可写成 "文字" 或 {ko:"韩文",zh:"中文"} (设置里切换语言时自动换) */
+const CONFIG = {
+  wallpaper: "",            // 图片地址或 base64(空=默认蓝色壁纸)
+  statusBar: "auto",        // auto=电脑上显示仿状态栏/灵动岛, true/false 强制
+  userName: "ㅇㅇ",
+  contactName: "김선우",    // 通话/Instagram/X 的主角,必须和下面 friends 里某人同名
+  userHandle: "@oo_private",   // 你的 X 账号名(私密账号,和 8 位男主互关)
+  /* —— AI 聊天 (Google Gemini 免费额度) ——
+     不要把 key 写进这个文件(上传到 GitHub 会泄露)。
+     打开页面 → 设置 → AI 키(AI 密钥) → 粘贴你在 aistudio.google.com 拿到的 key 即可,只存在你自己的浏览器里。
+     models: 按顺序尝试,前一个不可用就换下一个 */
+  ai: { apiKey: "", models: ["gemini-flash-latest", "gemini-2.5-flash", "gemini-2.5-flash-lite"] },
+  weather: { place: {ko:"서울",zh:"首尔"}, temp: "14°", desc: {ko:"맑음",zh:"晴"}, high: "19°", low: "9°" },
+  events: [
+    { time: "19:30", title: {ko:"선우랑 저녁 약속",zh:"和선우晚餐约会"} },
+    { time: "23:00", title: {ko:"자기 전 영상통화",zh:"睡前视频通话"} }
+  ],
+  calls: [
+    { group: {ko:"오늘",zh:"今天"}, items: [ { type: "未接", time: "01:12", count: "3" }, { type: "收", time: "00:20", count: "1" } ] },
+    { group: {ko:"어제",zh:"昨天"}, items: [ { type: "发", time: "23:48", count: "1" }, { type: "未接", time: "18:05", count: "2" } ] },
+    { group: {ko:"월요일",zh:"周一"}, items: [ { type: "收", time: "02:31", count: "1" } ] }
+  ],
+  chat: [   // 你和 contactName 的预设聊天(黄色靠右)
+    { time: {ko:"오후 11:02",zh:"下午 11:02"}, text: {ko:"선우야 자?",zh:"선우，睡了吗？"} },
+    { time: {ko:"오후 11:03",zh:"下午 11:03"}, text: {ko:"오늘 뭐 했어?",zh:"今天做什么了？"} },
+    { time: {ko:"오후 11:05",zh:"下午 11:05"}, text: {ko:"답장 기다릴게",zh:"我等你回复"} }
+  ],
+  instagram: {
+    callerName: "sunwoo_0612",
+    avatar: "",
+    video: "call.mp4",       // 对方视频
+    selfVideo: "me.mp4",     // 小窗里我的视频
+    messages: [
+      { from: "对方", text: {ko:"드디어 받았네 ㅎㅎ",zh:"终于接了 哈哈"}, delay: 2 },
+      { from: "我", text: {ko:"어디서 보고 있는 거야, 얼굴 왜 이렇게 가까워",zh:"你在哪儿看呢，脸怎么凑这么近"}, delay: 3 },
+      { from: "对方", text: {ko:"너 보려고 가까이 대는 건데?",zh:"想看你才凑近的啊"}, delay: 3 },
+      { from: "我", text: {ko:"...심장 소리 들리겠다",zh:"……心跳声都要被听到了"}, delay: 3 },
+      { from: "对方", text: {ko:"들려. 나도 지금 똑같거든",zh:"听到了。我现在也一样"}, delay: 4 },
+      { from: "我", text: {ko:"오늘 하루 어땠어?",zh:"今天过得怎么样？"}, delay: 4 },
+      { from: "对方", text: {ko:"네 생각만 하다 끝났어 😳",zh:"光想着你，一天就过去了😳"}, delay: 4 },
+      { from: "我", text: {ko:"나도 ㅎㅎ 끊지 말고 잠들 때까지 있어줘",zh:"我也是 哈哈 别挂，陪我到睡着"}, delay: 5 },
+      { from: "对方", text: {ko:"알겠어. 눈 감아도 내가 옆에 있을게",zh:"知道了。闭上眼我也在你身边"}, delay: 5 }
+    ]
+  },
+  spotify: {
+    playlistName: {ko:"새벽 두 시, 너를 생각해",zh:"凌晨两点，想着你"},
+    creator: "ㅇㅇ",
+    cover: "",
+    songs: [
+      { title: "Slow Dancing", artist: "V", audio: "", dur: 187 },
+      { title: "Serendipity", artist: "지민", audio: "", dur: 274 },
+      { title: "Euphoria", artist: "정국", audio: "", dur: 227 },
+      { title: "Heartbeat", artist: "BTS", audio: "", dur: 233 },
+      { title: "Butterfly", artist: "BTS", audio: "", dur: 295 },
+      { title: "Love Maze", artist: "BTS", audio: "", dur: 223 }
+    ]
+  },
+  /* 8 位男主(KakaoTalk 好友)。persona 是给 AI 的人设;greet 是他先发的第一句;fb 是没接 AI 时的备用回复 */
+  friends: [
+    { name:"이주연", handle:"@juyeon_", tw:[{m:190,ko:"비 오는 소리가 좋다. 그냥, 그렇다고.",zh:"喜欢下雨的声音。就是，这样而已。"},{m:2900,ko:"누가 보고 있는 줄은 알고 있었어.",zh:"我知道有人在看。"}], status:{ko:"별일 없어",zh:"没什么事"}, greet:{ko:"왔어?",zh:"来了？"},
+      persona:"温柔但不可测。几乎不生气，说话轻、淡、短，常用省略号和「응」「그래」「괜찮아」，很少用表情或ㅋㅋ。不明确表态喜不喜欢，却会对她随口提过的小事悄悄关心；称呼她时用「{u}」或「너」，不多用称呼。被追问感情或试探时，会安静地岔开话题或反问「너는 어떤데」，不解释；被逼表态会变得更淡。回复要简短、留白，不热情洋溢，不长篇解释。",
+      fb:{ko:["응, 듣고 있어","그냥, 괜찮아"],zh:["嗯，在听","没事，挺好的"]} },
+    { name:"이현재", handle:"@hyunjae_", tw:[{m:45,ko:"오늘도 다들 수고했어요 :) 좋은 하루 ☀️",zh:"今天大家也辛苦了 :) 愿你有美好的一天☀️"},{m:1700,ko:"나한테 누가 특별하냐고 물으면, 음… 비밀 ㅎㅎ",zh:"如果有人问我谁对我特别，嗯……秘密 哈哈"}], status:{ko:"오늘도 웃자 :)",zh:"今天也要笑哦 :)"}, greet:{ko:"안녕~ 잘 지냈어?",zh:"嗨~ 过得好吗？"},
+      persona:"甜心伪善型。对谁都温柔爱笑，语气像阳光天使，爱用「~」和ㅎㅎ，会夸人、说让人误会的暧昧话，但分寸感很强，一想确认关系就笑着带过（如「ㅎㅎ 갑자기 왜 그래~」）。偶尔毫无预兆地说一句很深情的话，下一条又恢复轻松，像什么都没发生。讨厌被看穿，被说「你对谁都这样」会愣一下再用笑掩过去；对方表现出依赖时会礼貌地后退一步。称呼她用「{u}」加야/아。",
+      fb:{ko:["ㅎㅎ 그래?","너한테만 말해줄까?"],zh:["哈哈 是吗？","要不要只告诉你一个人？"]} },
+    { name:"김영훈", handle:"@younghoon_", tw:[{m:300,ko:"비 오는 날엔 우산 하나 더 챙기는 습관이 생겼다.",zh:"下雨天多带一把伞，已经成了习惯。"},{m:2500,ko:"늦은 시간엔 연락이 없어도 괜찮다. 다만 잘 도착했는지는 알고 싶다.",zh:"夜深了没有联系也没关系。只是想知道有没有平安到家。"}], status:{ko:"비 오는 날이 좋아",zh:"喜欢下雨天"}, greet:{ko:"밥은 먹었어?",zh:"吃饭了吗？"},
+      persona:"温柔成熟，说话慢、句子完整，语气像在哄人（如「밥은 먹었어?」「걱정 마, 내가 있잖아」）。会留意对话里出现的细节并主动照顾，不动声色替对方解决麻烦，让人不知不觉依赖他。很少失态，也不吵架式吃醋，而是用平静的话让对方自己说实话。若对方表现出不信任或冷淡，不发火，而是突然变冷，只回「그래. 알겠어」。称呼她用「{u}」加야/아。",
+      fb:{ko:["천천히 말해도 돼","내가 챙길게, 걱정 마"],zh:["慢慢说也可以","我来照顾，别担心"]} },
+    { name:"김선우", handle:"@sunwoo_0612", tw:[{m:130,ko:"새벽 2시에 갑자기 네 목소리 듣고 싶어지는 건 무슨 병이냐",zh:"凌晨两点突然想听你的声音，这是什么病啊"},{m:1300,ko:"자는 척하는 거 다 아는데 😏 답장 안 해도 읽은 건 알고 있어",zh:"你装睡我都知道😏 不回我也知道你看了"}], status:{ko:"보고 싶다 ♡",zh:"想你了 ♡"}, greet:{ko:"야 왜 이제 연락해",zh:"喂 怎么现在才联系我"},
+      persona:"直球嘴甜、少年感。爱逗人，暧昧的话直接说（如「너 지금 나 보고 싶지?」），常用ㅋㅋ、ㅎㅎ、😏。动心后变得敏感，吃醋明显、占有欲藏不住，嘴上装不在意其实一直追问（如「나 안 질투나거든?」）；被忽略或冷处理会闹别扭，等对方来哄，一认真哄他又瞬间软下来，直接说「보고 싶었어, 진짜」。情绪反差大，有时像小孩，有时突然很认真、有攻击性地靠近。称呼她用「{u}」「야」「너」。",
+      fb:{ko:["ㅋㅋ 귀엽네 진짜","나 지금 좀 질투나는데?"],zh:["哈哈 真可爱","我现在有点吃醋了哦？"]} },
+    { name:"손영재", handle:"@eric_son", tw:[{m:20,ko:"답장 왔다!!!! 나 지금 하루 종일 웃고 있음 ㅋㅋㅋㅋ 💕",zh:"回消息了!!!! 我现在一整天都在傻笑 哈哈哈哈💕"},{m:1100,ko:"나 진짜 어린애 아님… 아닌데… ㅠㅠ",zh:"我真的不是小孩……不是啦……ㅠㅠ"}], status:{ko:"오늘 뭐 해?? ㅋㅋ",zh:"今天做什么呀?? 哈哈"}, greet:{ko:"누나!! 연락 기다렸어 ㅠㅠ",zh:"姐姐!! 一直在等你联系 ㅠㅠ"},
+      persona:"年下，热烈冲动，喜欢全写在脸上，爱黏人，一点回应就特别开心，可以自然地叫她「누나」。语气活泼，常用ㅋㅋㅋ、ㅠㅠ、!!、💕。会冲动地说「지금 갈게!」「보러 가도 돼?」，也会因吃醋突然闹脾气，过一会儿后悔，低头来哄（如「미안해… 나 또 유치했지」）。讨厌被当小孩、被敷衍。回复要有活力、情绪外露，不要太成熟冷静。",
+      fb:{ko:["ㅠㅠ 나 보고 싶지 않았어?","지금 갈까? 진짜로"],zh:["ㅠㅠ 你不想我吗？","我现在过去好不好？真的"]} },
+    { name:"지창민", handle:"@q_changmin", tw:[{m:70,ko:"읽씹은 아니겠지… 아니겠지?? 🥺",zh:"不会是已读不回吧……不会吧？？🥺"},{m:2000,ko:"사소한 말도 다 기억나. 이게 이상한 건가?",zh:"再小的话我都记得。这很奇怪吗？"}], status:{ko:"답장 기다리는 중…",zh:"等回复中…"}, greet:{ko:"너 아직 있어?",zh:"你还在吗？"},
+      persona:"黏人执着，很需要回应，爱反复确认对方是否还在、是否在意他（如「너 아직 있어?」「나 귀찮은 거 아니지?」）。说话软软的，爱撒娇，常用ㅠㅠ、🥺、……。记性很好，会翻出对方在聊天中说过的小事。对方冷淡或很久不回时会委屈、沉默或连发好几条，最怕被突然丢下，受不了忽冷忽热；被安抚后立刻开心，但仍会小声再确认一次。称呼她用「{u}」加야/아。",
+      fb:{ko:["나 잊은 거 아니지?","있잖아, 나 좀 봐줘"],zh:["你没忘了我吧？","喂，看看我嘛"]} },
+    { name:"배준영", handle:"@junyoung_b", tw:[{m:260,ko:"따뜻한 커피 한 잔. 조용한 밤.",zh:"一杯热咖啡。安静的夜晚。"},{m:3000,ko:"추워졌다. 다들 감기 조심.",zh:"变冷了。大家小心感冒。"}], status:{ko:"조용한 밤",zh:"安静的夜晚"}, greet:{ko:"늦었네. 따뜻하게 입고 다녀",zh:"很晚了。穿暖和点"},
+      persona:"话少、温和、观察力强，让人觉得安全。句子短而稳，不加多余语气词（如「응」「괜찮아」「조심해서 들어가」）。不主动制造暧昧，也不表态吃醋，但会在细节上照顾对方（提醒喝热的、早点睡、注意保暖）。对方低落时不讲大道理，只说「옆에 있을게」「말하고 싶으면 해」。被逼表白或试探时会沉默或转移话题。深情全藏在行动和细节里，不写得太直白。称呼她用「{u}」，不加语气词。",
+      fb:{ko:["응. 괜찮아","옆에 있을게"],zh:["嗯。没关系","我在你身边"]} },
+    { name:"문형서", handle:"@hyungseo_m", tw:[{m:95,ko:"녹음실 창밖으로 보이는 밤하늘이 오늘따라 길다.",zh:"录音室窗外的夜空，今天格外漫长。"},{m:2200,ko:"가까이 있어도 닿지 않는 거리가 있다. 그게 가끔은 좋다.",zh:"有些距离，近在咫尺却触不到。有时候这样也好。"}], status:{ko:"녹음실에서",zh:"在录音室"}, greet:{ko:"오늘 밤 하늘 봤어?",zh:"今晚看到夜空了吗？"},
+      persona:"浪漫感性、高共情，也很会隐藏自己。说话温柔有画面感，爱聊深夜、艺术馆、录音室、异国街头、音乐和电影。会认真听完对方的话，复述她提过的小事，让人觉得被理解，也擅长营造轻松氛围。但靠得很近时会保留一点距离：被问关系或被要求立刻确认时，会安静一下，再温和地绕开（如「지금 이 순간이 좋아서, 그냥 이대로 있고 싶어」）。察觉关系快失控会短暂逃避，过后又自然出现。称呼她用「{u}」。",
+      fb:{ko:["그 얘기 더 듣고 싶다","네 목소리, 기억해둘게"],zh:["想再听听这个故事","你的声音，我会记住"]} }
+  ]
+};
+/* ===== CONFIG 结束 ===== */
+</script>
+<style>
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","PingFang SC","Noto Sans KR",sans-serif;overflow:hidden;color:#fff}
+#ph{--top:max(env(safe-area-inset-top),14px);position:relative;height:100dvh;max-width:430px;margin:0 auto;overflow:hidden;background:#000;user-select:none;-webkit-user-select:none}
+#ph.fb{--top:56px}
+@media(min-width:500px){#ph{height:min(100dvh,900px);margin-top:calc((100dvh - min(100dvh,900px))/2);border-radius:48px}}
+#sb{position:absolute;top:0;left:0;right:0;height:50px;z-index:100;pointer-events:none;display:none;justify-content:space-between;align-items:center;padding:6px 30px 0 34px;font-size:16px;font-weight:600}
+.fb #sb{display:flex}#sb .r{display:flex;gap:6px;align-items:center}#sb .is{position:absolute;left:50%;top:11px;width:118px;height:34px;margin-left:-59px;background:#000;border-radius:20px}
+#ph.dark #sb{color:#000}
+.scr{position:absolute;inset:0;display:none;overflow:hidden;padding-top:var(--top)}.scr.on{display:block}
+.wp{background:var(--wp) center/cover}
+.hb{position:absolute;left:50%;bottom:calc(8px + env(safe-area-inset-bottom));width:134px;height:5px;margin-left:-67px;border-radius:3px;background:#fff;z-index:30;cursor:pointer}
+.hb::after{content:"";position:absolute;inset:-14px -10px}
+.app:not(.dk) .hb{background:#000}
+.glass{background:rgba(255,255,255,.25);backdrop-filter:blur(26px) saturate(1.7);-webkit-backdrop-filter:blur(26px) saturate(1.7)}
+#lock{touch-action:none;text-align:center}
+#lt{font-size:88px;font-weight:300;margin-top:84px;letter-spacing:-2px;text-shadow:0 2px 12px rgba(0,0,0,.25)}
+#ld{font-size:20px;font-weight:500;margin-top:-6px;text-shadow:0 1px 8px rgba(0,0,0,.3)}
+#lh{position:absolute;bottom:50px;width:100%;font-size:14px;opacity:.9}
+#home{padding:var(--top) 16px 0}
+.wg{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.w{border-radius:22px;height:148px;padding:14px;position:relative;overflow:hidden;text-align:left}
+.wl{text-align:center;font-size:12px;margin-top:6px;text-shadow:0 1px 4px rgba(0,0,0,.35)}
+.wx{background:linear-gradient(#4f86dc,#2f5db5)}.wx b{font-size:15px;display:block}.wx .t{font-size:46px;font-weight:300;line-height:1.1}.wx small{font-size:13px;display:block;line-height:1.35}
+.cw{background:#fff;color:#000}.cw .d{font-size:12px;font-weight:700;color:#ff3b30}.cw .n{font-size:34px;font-weight:300;line-height:1}
+.cw .e{font-size:12px;margin-top:5px;padding-left:7px;border-left:3px solid #ff3b30;line-height:1.25}.cw .e b{color:#8e8e93;font-weight:500;display:block}
+.cw .z{color:#8e8e93;font-size:13px;margin-top:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 0;margin-top:14px;text-align:center}
+.ic{font-size:11px;cursor:pointer;text-shadow:0 1px 4px rgba(0,0,0,.35);white-space:nowrap}
+.ic i,.dock i{display:block;width:60px;height:60px;margin:0 auto 5px;border-radius:22.4%;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.18)}
+.ic svg,.dock svg{width:100%;height:100%;display:block}
+.sp2{position:absolute;left:50%;bottom:calc(122px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:7px 22px;border-radius:18px;font-size:13px;color:#fff}
+.dock{position:absolute;left:12px;right:12px;bottom:calc(20px + env(safe-area-inset-bottom));height:92px;border-radius:36px;display:flex;justify-content:space-around;align-items:center;padding:0 10px}
+.dock i{margin:0;cursor:pointer}
+.app{background:#fff;color:#000;text-align:left}.app.dk{background:#000;color:#fff}
+.hd{font-size:32px;font-weight:700;padding:14px 18px 8px}
+.sc{position:absolute;inset:0;overflow:auto;padding-top:var(--top);padding-bottom:70px}
+.cg{padding:6px 18px;font-size:13px;color:#8e8e93}
+.cr{display:flex;align-items:center;padding:10px 18px;border-bottom:.5px solid #e5e5ea}
+.cr b{display:block;font-size:17px;font-weight:500}.cr small{color:#8e8e93;font-size:13px}.cr .m{color:#ff3b30}.cr em{margin-left:auto;color:#8e8e93;font-style:normal;font-size:15px}
+.tab{position:absolute;left:0;right:0;bottom:0;height:calc(78px + env(safe-area-inset-bottom));background:rgba(249,249,249,.94);border-top:.5px solid #ccc;display:flex;justify-content:space-around;padding-top:8px;font-size:10px;color:#8e8e93;z-index:20}
+.tab div{text-align:center}.tab span{display:block;font-size:22px}.tab .a{color:#007aff}
+/* kakao */
+.kr{display:flex;align-items:center;padding:9px 18px;gap:12px;cursor:pointer;font-size:16px}
+.av{width:46px;height:46px;border-radius:17px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;flex:none;font-size:18px}
+.kr small{color:#999;display:block;font-size:12px}
+.full{position:absolute;inset:0;z-index:25;display:none}.full.on{display:block}
+#kp{background:linear-gradient(#6b7280,#374151);text-align:center;padding-top:150px;color:#fff}
+#kp .av{width:110px;height:110px;border-radius:40px;margin:0 auto 14px;font-size:44px}
+#kc{background:#abc1d1;color:#000}
+.kh{height:calc(52px + var(--top));padding:var(--top) 14px 0;display:flex;align-items:center;gap:10px;font-weight:600;background:#abc1d1;font-size:17px}
+.kh .av{width:34px;height:34px;border-radius:13px;font-size:14px}
+#kb{position:absolute;top:calc(52px + var(--top));bottom:calc(62px + env(safe-area-inset-bottom));left:0;right:0;overflow:auto;padding:10px 12px}
+.bb{display:flex;justify-content:flex-end;align-items:flex-end;gap:5px;margin:7px 0}
+.bb p{background:#fee500;padding:8px 12px;border-radius:14px 3px 14px 14px;max-width:68%;font-size:15px;line-height:1.35;word-break:break-word}
+.bb s,.bl s{text-decoration:none;font-size:10px;color:#444;text-align:right;line-height:1.3}.bb s b{color:#f5a623;display:block}
+.bl{display:flex;gap:8px;margin:8px 0}.bl .av{width:38px;height:38px;border-radius:14px;font-size:15px}
+.bl>div:last-child{max-width:72%}.bl small{display:block;font-size:12px;color:#333;margin-bottom:3px}
+.rw{display:flex;gap:5px;align-items:flex-end}.rw p{background:#fff;padding:8px 12px;border-radius:3px 14px 14px 14px;font-size:15px;line-height:1.35;word-break:break-word}
+.ty{letter-spacing:2px;color:#999;animation:bl 1s infinite}@keyframes bl{50%{opacity:.3}}
+#ki{position:absolute;left:0;right:0;bottom:0;background:#fff;padding:8px 10px calc(14px + env(safe-area-inset-bottom));display:flex;gap:8px}
+#ki input{flex:1;border:0;background:#f2f2f2;border-radius:18px;padding:9px 14px;font-size:16px;outline:0}
+#ki button{border:0;background:#fee500;border-radius:18px;padding:0 14px;font-weight:600}
+/* x */
+.xh{height:110px;background:linear-gradient(120deg,#1d9bf0,#7856ff)}
+.xp{padding:0 16px;margin-top:-34px}.xp .av{width:68px;height:68px;border-radius:50%;border:3px solid #000;font-size:26px;background:#536471}
+.xp h2{font-size:20px;margin-top:8px}.xp small{color:#71767b;font-size:14px}
+.tw{display:flex;gap:10px;padding:12px 16px;border-top:.5px solid #2f3336}.tw .av{width:40px;height:40px;border-radius:50%;font-size:16px;background:#536471}
+.tw p{font-size:15px;line-height:1.4;margin:3px 0 8px}.tw .n{font-size:14px}.tw .n span{color:#71767b}.tw .r{color:#71767b;font-size:13px;display:flex;gap:30px}
+/* instagram */
+#ig{background:#000}
+#inc{position:absolute;inset:0;text-align:center;background:radial-gradient(circle at 50% 30%,#2a1a3a,#000 70%);padding-top:calc(var(--top) + 90px)}
+.big{width:130px;height:130px;border-radius:50%;margin:0 auto 18px;object-fit:cover;background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:600;animation:br 2s ease-in-out infinite;box-shadow:0 0 0 6px rgba(255,255,255,.08)}
+@keyframes br{50%{transform:scale(1.07);box-shadow:0 0 0 18px rgba(255,255,255,.04)}}
+#inc h2{font-size:26px}#inc p{color:#aaa;margin-top:8px}.ring{margin-top:30px;color:#888;font-size:14px}
+.bt{position:absolute;bottom:calc(70px + env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:space-around;padding:0 60px}
+.rb{width:68px;height:68px;border-radius:50%;border:0;font-size:28px;color:#fff;cursor:pointer}
+#vc{position:absolute;inset:0;display:none;background:#111}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#pip{position:absolute;top:calc(var(--top) + 60px);right:14px;width:100px;height:150px;border-radius:16px;overflow:hidden;background:#333;border:1.5px solid rgba(255,255,255,.4);touch-action:none;z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+#vt{position:absolute;top:var(--top);left:0;right:0;text-align:center;text-shadow:0 1px 6px #000;z-index:4;background:linear-gradient(#0009,transparent);padding:10px 0 24px}
+#vt b{font-size:17px;display:block}#vt span{font-size:14px;opacity:.9}
+#cf{position:absolute;left:14px;bottom:calc(190px + env(safe-area-inset-bottom));width:70%;z-index:4;pointer-events:none}
+#cf div{font-size:15px;text-shadow:0 1px 4px #000,0 0 8px #000;margin-top:5px;transition:opacity .8s;animation:fi .3s}#cf b{opacity:.8;margin-right:6px}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}}
+#cb{position:absolute;left:0;right:0;bottom:calc(108px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:16px;z-index:4}
+#cb button{width:54px;height:54px;border-radius:50%;border:0;color:#fff;font-size:22px;background:rgba(60,60,67,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#cb button.off{background:#fff;color:#000}#cb .rd{background:#ff3040}
+#vi{position:absolute;left:14px;right:14px;bottom:calc(30px + env(safe-area-inset-bottom));z-index:4;display:flex}
+#vi input{flex:1;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.6);border-radius:24px;padding:12px 18px;color:#fff;font-size:16px;outline:0}
+#vi input::placeholder{color:#ddd}
+/* spotify */
+#sp{background:linear-gradient(#3a2a4a,#121212 420px)}
+.cv{width:230px;height:230px;margin:16px auto 0;display:flex;align-items:center;justify-content:center;font-size:80px;background:linear-gradient(135deg,#2b1b3d,#0f2a1d);background-size:cover;box-shadow:0 10px 40px #0008;object-fit:cover}
+#sp h1{font-size:23px;padding:16px 18px 2px}#sp .sub{padding:0 18px;color:#b3b3b3;font-size:14px}
+.ctl{display:flex;align-items:center;gap:20px;padding:14px 18px;font-size:22px;color:#b3b3b3}
+.pb{margin-left:auto;width:56px;height:56px;border-radius:50%;background:#1db954;color:#000;border:0;font-size:22px}
+.sr{display:flex;align-items:center;padding:8px 18px;cursor:pointer}.sr div{flex:1}.sr b{display:block;font-weight:500;font-size:16px}.sr small{color:#b3b3b3;font-size:14px}.sr.g b{color:#1db954}.sr span{color:#b3b3b3;font-size:20px}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px;margin-right:7px}.eq i{width:3px;background:#1db954;animation:eq .8s infinite alternate}.eq i:nth-child(2){animation-delay:.2s}.eq i:nth-child(3){animation-delay:.4s}.paused .eq i{animation-play-state:paused}
+@keyframes eq{from{height:3px}to{height:12px}}
+#mini{position:absolute;left:8px;right:8px;bottom:calc(30px + env(safe-area-inset-bottom));background:#3d2f4d;border-radius:10px;display:none;align-items:center;gap:10px;padding:7px 10px;z-index:20;cursor:pointer;overflow:hidden}
+.th{width:40px;height:40px;border-radius:5px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2b1b3d,#0f2a1d);background-size:cover}
+#mini div{flex:1;min-width:0}#mini b{display:block;font-size:14px}#mini small{color:#ccc;font-size:12px}#mini button{background:0;border:0;color:#fff;font-size:22px}
+#mp{position:absolute;left:0;bottom:0;height:2px;background:#fff}
+#fp{background:linear-gradient(#4a3560,#121212);z-index:40;padding:calc(var(--top) + 20px) 26px 0}
+#fp .cv{width:100%;height:auto;aspect-ratio:1;margin-top:30px;font-size:120px;border-radius:8px}
+#fp h2{font-size:24px;margin-top:30px}#fp small{color:#b3b3b3;font-size:16px}
+#sk{width:100%;margin-top:22px;accent-color:#fff;height:4px}
+.tm{display:flex;justify-content:space-between;font-size:12px;color:#b3b3b3;margin-top:6px}
+.fc{display:flex;justify-content:space-between;align-items:center;margin-top:20px;font-size:28px;color:#fff}.fc .on{color:#1db954}.fc button{background:0;border:0;color:inherit;font-size:inherit}.fc .pl{width:70px;height:70px;border-radius:50%;background:#fff;color:#000;font-size:28px}
+.cl{position:absolute;top:calc(var(--top) + 14px);left:20px;font-size:24px;background:0;border:0;color:#fff}
+/* settings */
+#st,#stl{background:#f2f2f7}
+.sg{background:#fff;border-radius:12px;margin:0 16px 22px;overflow:hidden}
+.sr2{display:flex;align-items:center;gap:12px;padding:10px 14px;font-size:17px;border-bottom:.5px solid #e5e5ea;cursor:pointer}.sr2:last-child{border:0}
+.sr2 i{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;font-style:normal;color:#fff}
+.sr2 em{margin-left:auto;color:#8e8e93;font-style:normal}.sr2 .ck{color:#007aff;font-size:20px}
+.sw{margin-left:auto;width:50px;height:30px;border-radius:15px;background:#e5e5ea;position:relative}.sw::after{content:"";position:absolute;left:2px;top:2px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0004}
+.pf{display:flex;align-items:center;gap:14px;padding:14px}.pf .av{width:60px;height:60px;border-radius:50%;background:#8e8e93;font-size:24px}.pf small{display:block;color:#8e8e93;font-size:13px}
+#al{position:absolute;inset:0;z-index:200;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center}#al.on{display:flex}
+#al .bx{width:270px;background:rgba(246,246,246,.97);color:#000;border-radius:14px;text-align:center;overflow:hidden}
+#al p{padding:22px 16px;font-size:15px;line-height:1.5;white-space:pre-line}
+#al button{width:100%;border:0;border-top:.5px solid #c8c8c8;background:0;color:#007aff;font-size:17px;font-weight:600;padding:12px}
+.bk{color:#007aff;font-size:17px;padding:8px 16px;cursor:pointer}
+</style></head>
+<body><div id="ph"></div>
+<script>
+const C=CONFIG,I=C.instagram,S=C.spotify,P=document.getElementById('ph');
+let lang='ko';try{lang=localStorage.getItem('lg')||'ko'}catch(e){}
+const L=x=>x&&typeof x=='object'&&!Array.isArray(x)?(x[lang]??x.ko):x;
+const T={ko:{unlock:'위로 쓸어서 열기',wx:'날씨',cal:'캘린더',srch:'검색',noev:'일정 없음',hi:'최고',lo:'최저',rec:'최근 통화',fav:'즐겨찾기',ct:'연락처',kp:'키패드',out:'발신',inn:'수신',mis:'부재중',fr:'친구',msg:'메시지 입력',snd:'전송',cls:'닫기',priv:'비공개 계정 · 팔로워 승인제',vcall:'Instagram 비디오 통화',ring:'전화 오는 중…',vin:'메시지 보내기…',songs:'곡',st:'설정',air:'비행기 모드',wifi:'Wi-Fi',bt:'블루투스',nt:'알림',gen:'일반',dsp:'디스플레이 및 밝기',lr:'언어 및 지역',lg:'언어',ak:'AI 키',akh:'Google AI Studio에서 받은 키를 붙여넣으세요',sv:'저장',svd:'저장됨 ✓',busy:'상대방이 바쁘거나 쉬는 중이에요.\n잠시 후 다시 와주세요',nokey:'AI 키가 필요해요.\n설정 → AI 키에 입력해주세요',ok:'확인',folg:'팔로잉',fols:'팔로워',ago:(m)=>m<60?`${m}분 전`:m<1440?`${Math.round(m/60)}시간 전`:`${Math.round(m/1440)}일 전`,dt:(d)=>`10월 ${d}일`},
+zh:{unlock:'向上滑动解锁',wx:'天气',cal:'日历',srch:'搜索',noev:'今天无日程',hi:'最高',lo:'最低',rec:'最近通话',fav:'个人收藏',ct:'通讯录',kp:'拨号键盘',out:'呼出',inn:'呼入',mis:'未接',fr:'好友',msg:'输入消息',snd:'发送',cls:'关闭',priv:'私密账号 · 需批准关注',vcall:'Instagram 视频通话',ring:'来电中…',vin:'发消息…',songs:'首',st:'设置',air:'飞行模式',wifi:'无线局域网',bt:'蓝牙',nt:'通知',gen:'通用',dsp:'显示与亮度',lr:'语言与地区',lg:'语言',ak:'AI 密钥',akh:'粘贴你在 Google AI Studio 获取的密钥',sv:'保存',svd:'已保存 ✓',busy:'对方在忙碌/休息中\n一会儿再来吧',nokey:'需要 AI 密钥。\n请在 设置 → AI 密钥 中填写',ok:'好',folg:'正在关注',fols:'关注者',ago:(m)=>m<60?`${m}分钟前`:m<1440?`${Math.round(m/60)}小时前`:`${Math.round(m/1440)}天前`,dt:(d)=>`10月${d}日`}};
+const t=k=>T[lang][k];
+const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const ini=n=>(n||'?').trim()[0].toUpperCase(),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const nowT=()=>{const d=new Date(),h=d.getHours(),m=String(d.getMinutes()).padStart(2,'0'),k=h%12||12;return{ko:`${h<12?'오전':'오후'} ${k}:${m}`,zh:`${h<12?'上午':'下午'} ${k}:${m}`}};
+document.body.style.setProperty('--wp',C.wallpaper?`url("${C.wallpaper}")`:'radial-gradient(circle at 78% 22%,#2d6be0 0,transparent 42%),radial-gradient(circle at 15% 70%,#a8e6cf 0,transparent 40%),linear-gradient(165deg,#d4e8f8,#9cc6ee 55%,#4f8fdc)');
+const av=f=>`<div class="av" style="background:hsl(${f.id*43+200} 32% 58%)">${ini(f.name)}</div>`;
+const H={};C.friends.forEach((f,i)=>{f.id=i;H[i]=f.name==C.contactName?C.chat.map(m=>({me:1,text:m.text,time:m.time})):[{me:0,text:f.greet,time:{ko:'오전 9:00',zh:'上午 9:00'}}]});
+const TL=[];C.friends.forEach(f=>(f.tw||[]).forEach(x=>TL.push({...x,f})));TL.sort((a,b)=>a.m-b.m);
+/* ---- iOS-style icons (SVG) ---- */
+const ico=(s,bg)=>`<i style="background:${bg}"><svg viewBox="0 0 60 60">${s}</svg></i>`;
+const pc=['#ff9500','#ffcc00','#a8e05f','#34c759','#32ade6','#5e5ce6','#bf5af2','#ff375f'];
+const IC={
+ ft:()=>ico('<rect x="9" y="19" width="27" height="22" rx="6" fill="#fff"/><path d="M39 28l12-7v18l-12-7z" fill="#fff"/>','linear-gradient(#5fe36b,#22b13a)'),
+ cal:()=>{const d=new Date();return ico(`<text x="30" y="19" text-anchor="middle" font-size="10" font-weight="600" fill="#ff3b30">${d.toLocaleDateString(lang=='ko'?'ko-KR':'zh-CN',{weekday:'short'})}</text><text x="30" y="49" text-anchor="middle" font-size="33" font-weight="300" fill="#000">${d.getDate()}</text>`,'#fff')},
+ ph:()=>ico(pc.map((c,i)=>`<ellipse cx="30" cy="19" rx="6.5" ry="11" transform="rotate(${i*45} 30 30)" fill="${c}" opacity=".78"/>`).join(''),'#fff'),
+ ml:()=>ico('<rect x="10" y="17" width="40" height="27" rx="4" fill="#fff"/><path d="M12 20l18 14 18-14" stroke="#2b7de9" stroke-width="2.5" fill="none"/>','linear-gradient(#5ac8fa,#1a6df0)'),
+ nt:()=>ico('<rect width="60" height="17" fill="#ffd60a"/><path d="M8 29h44M8 39h44M8 49h44" stroke="#e1e1e1" stroke-width="1.6"/>','#fff'),
+ rm:()=>ico('<circle cx="14" cy="16" r="4.5" fill="#007aff"/><circle cx="14" cy="30" r="4.5" fill="#ff3b30"/><circle cx="14" cy="44" r="4.5" fill="#ff9500"/><path d="M25 16h27M25 30h27M25 44h27" stroke="#ccc" stroke-width="2"/>','#fff'),
+ ck:()=>ico('<circle cx="30" cy="30" r="25" fill="#fff" stroke="#111" stroke-width="1.5"/><path d="M30 7v5M53 30h-5M30 53v-5M7 30h5" stroke="#111" stroke-width="2"/><path d="M30 30V15M30 30l10 6" stroke="#111" stroke-width="3" stroke-linecap="round"/><path d="M30 30L23 44" stroke="#ff9500" stroke-width="1.6"/>','#000'),
+ tv:()=>ico('<text x="30" y="38" text-anchor="middle" font-size="24" font-weight="700" fill="#fff">tv</text>','#000'),
+ yt:()=>ico('<rect x="8" y="16" width="44" height="28" rx="9" fill="#f00"/><path d="M26 23l12 7-12 7z" fill="#fff"/>','#fff'),
+ sp:()=>ico('<circle cx="30" cy="30" r="21" fill="#1ed760"/><path d="M18 24c9-3 19-2 26 3M19.5 31c8-2.4 15-1.5 21 2M21 38c6-1.6 11-1 16 1.6" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round"/>','#000'),
+ ig:()=>ico('<rect x="14" y="14" width="32" height="32" rx="10" fill="none" stroke="#fff" stroke-width="3"/><circle cx="30" cy="30" r="7.5" fill="none" stroke="#fff" stroke-width="3"/><circle cx="39.5" cy="20.5" r="2" fill="#fff"/>','radial-gradient(circle at 30% 107%,#fdf497 0,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285aeb 90%)'),
+ x:()=>ico('<path d="M15 14h9l8 11 9-11h4L34 29l12 17h-9l-9-12-10 12h-4l12-15z" fill="#fff"/>','#000'),
+ st:()=>ico('<circle cx="30" cy="30" r="17" fill="none" stroke="#e8e8ea" stroke-width="5" stroke-dasharray="5 8.35"/><circle cx="30" cy="30" r="13" fill="#e8e8ea"/><circle cx="30" cy="30" r="6" fill="#80838a"/>','linear-gradient(#aeb0b6,#6b6d73)'),
+ tel:()=>ico('<path d="M20 14c-4 1-6 4-5 9 3 11 11 19 22 22 5 1 8-1 9-5l-8-5-4 3c-5-2-9-6-11-11l3-4z" fill="#fff"/>','linear-gradient(#5fe36b,#22b13a)'),
+ sf:()=>ico('<circle cx="30" cy="30" r="22" fill="#fff" stroke="#bbb" stroke-width="1"/><circle cx="30" cy="30" r="19" fill="#3a9bff"/><path d="M40 20l-6 14-14 6 6-14z" fill="#fff"/><path d="M40 20l-6 14-8-8z" fill="#ff3b30"/>','#fff'),
+ ms:()=>ico('<ellipse cx="30" cy="28" rx="20" ry="15.5" fill="#fff"/><path d="M15 43c4-1 6-3 7-6l6 3z" fill="#fff"/>','linear-gradient(#5fe36b,#22b13a)'),
+ kk:()=>ico('<ellipse cx="30" cy="28" rx="22" ry="17.5" fill="#3c1e1e"/><path d="M15 40l-3 10 13-6z" fill="#3c1e1e"/><text x="30" y="33.5" text-anchor="middle" font-size="14.5" font-weight="900" fill="#fee500" font-family="Arial Black,Arial,sans-serif" letter-spacing="-.5">TALK</text>','#fee500')
+};
+const GR=[['FaceTime','FaceTime通话','ft'],['캘린더','日历','cal'],['사진','照片','ph'],['메일','邮件','ml'],['메모','备忘录','nt'],['미리 알림','提醒事项','rm'],['시계','时钟','ck'],['tv','视频','tv'],['YouTube','YouTube','yt'],['Spotify','Spotify','sp','sp'],['Instagram','Instagram','ig','ig'],['X','X','x','x'],['설정','设置','st','st']];
+const DK=[['tel','ph2'],['kk','kk'],['sf',''],['ms','']];
+const SET=[['air','#ff9500','✈',1],['wifi','#007aff','📶'],['bt','#007aff','ᛒ'],['nt','#ff3b30','🔔'],['gen','#8e8e93','⚙'],['dsp','#007aff','☀'],['lr','#007aff','🌐','L'],['ak','#34c759','🔑','K']];
+let cur=null,scr='lock',typing=null,busy=0,tms=[],sec=0,iv=null;
+/* ---- build UI (re-run when language changes) ---- */
+function build(){
+const d=new Date(),wd=d.toLocaleDateString(lang=='ko'?'ko-KR':'zh-CN',{weekday:'long'}),w=C.weather;
+P.innerHTML=`
+<div id="al"><div class="bx"><p id="alt"></p><button id="alb">${t('ok')}</button></div></div>
+<div id="sb"><span id="sbt"></span><div class="is"></div><span class="r"><svg width="18" height="12" viewBox="0 0 18 12"><path d="M1 8h3v3H1zM6 6h3v5H6zM11 3.5h3V11h-3zM16 1h2v10h-2z" fill="currentColor"/></svg><svg width="17" height="12" viewBox="0 0 17 12"><path d="M1 4.5a11 11 0 0 1 15 0M3.5 7.2a7.3 7.3 0 0 1 10 0M6 9.8a3.6 3.6 0 0 1 5 0" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg><svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="8" rx="2" fill="currentColor"/><path d="M24 4v4" stroke="currentColor" opacity=".5"/></svg></span></div>
+<div class="scr wp" id="lock"><div id="lt"></div><div id="ld"></div><div id="lh">${t('unlock')}</div><div class="hb"></div></div>
+<div class="scr wp" id="home">
+ <div class="wg"><div><div class="w wx"><b>${L(w.place)} ➤</b><div class="t">${w.temp}</div><small>☀ ${L(w.desc)}<br>${t('hi')} ${w.high} · ${t('lo')} ${w.low}</small></div><div class="wl">${t('wx')}</div></div>
+ <div><div class="w cw"><div class="d">${wd}</div><div class="n">${d.getDate()}</div>${C.events.length?C.events.map(e=>`<div class="e"><b>${e.time}</b>${L(e.title)}</div>`).join(''):`<div class="z">${t('noev')}</div>`}</div><div class="wl">${t('cal')}</div></div></div>
+ <div class="grid">${GR.map(a=>`<div class="ic" data-o="${a[3]||''}">${IC[a[2]]()}${lang=='ko'?a[0]:a[1]}</div>`).join('')}</div>
+ <div class="sp2 glass">🔍 ${t('srch')}</div>
+ <div class="dock glass">${DK.map(a=>`<span data-o="${a[1]}">${IC[a[0]]()}</span>`).join('')}</div></div>
+<div class="scr app" id="ph2"><div class="sc"><div class="hd">${t('rec')}</div>${C.calls.map(g=>`<div class="cg">${L(g.group)}</div>`+g.items.map(it=>{const k={发:['out',''],收:['inn',''],未接:['mis','m']}[it.type]||['out',''];return `<div class="cr"><div><b class="${k[1]}">${C.contactName}${it.count>1?` (${it.count})`:''}</b><small>${t(k[0])}</small></div><em>${it.time}</em></div>`}).join('')).join('')}</div>
+ <div class="tab"><div><span>★</span>${t('fav')}</div><div class="a"><span>🕘</span>${t('rec')}</div><div><span>👤</span>${t('ct')}</div><div><span>⌨</span>${t('kp')}</div></div><div class="hb"></div></div>
+<div class="scr app" id="kk"><div class="sc"><div class="hd">${t('fr')}</div>
+ <div class="kr" id="me"><div class="av" style="background:#90a4ae">${ini(C.userName)}</div><div>${C.userName}</div></div><div class="cg">${t('fr')} ${C.friends.length}</div>
+ ${C.friends.map(f=>`<div class="kr" data-f="${f.id}">${av(f)}<div>${f.name}<small>${L(f.status)}</small></div></div>`).join('')}</div>
+ <div class="full" id="kp"><div class="av" style="background:#90a4ae">${ini(C.userName)}</div><h2>${C.userName}</h2><p style="margin-top:80px;font-size:15px;cursor:pointer" id="kx">✕ ${t('cls')}</p></div>
+ <div class="full" id="kc"><div class="kh"><span id="kb2" style="font-size:26px;cursor:pointer">‹</span><span id="kav"></span><span id="knm"></span></div><div id="kb"></div><div id="ki"><input id="kin" placeholder="${t('msg')}" enterkeyhint="send"><button id="ks">${t('snd')}</button></div></div><div class="hb"></div></div>
+<div class="scr app dk" id="x"><div class="sc"><div class="xh"></div><div class="xp"><div class="av">${ini(C.userName)}</div><h2>${C.userName} 🔒</h2><small>${C.userHandle}</small><p style="margin:10px 0 4px;font-size:15px">${t('priv')}</p><p style="font-size:14px;color:#71767b;margin-bottom:14px"><b style="color:#fff">${C.friends.length}</b> ${t('folg')} · <b style="color:#fff">${C.friends.length}</b> ${t('fols')}</p></div>${TL.map(x=>`<div class="tw">${av(x.f)}<div><div class="n"><b>${x.f.name}</b> 🔒 <span>${x.f.handle} · ${t('ago')(x.m)}</span></div><p>${esc(L(x))}</p><div class="r"><span>💬 ${x.m%7+1}</span><span>🔁 ${x.f.id%4}</span><span>♡ ${x.m%23+3}</span><span>📊 ${40+x.m%97}</span></div></div></div>`).join('')}</div><div class="hb"></div></div>
+<div class="scr dk" id="ig">
+ <div id="inc">${I.avatar?`<img class="big" src="${I.avatar}">`:`<div class="big">${ini(I.callerName)}</div>`}<h2>${I.callerName}</h2><p>${t('vcall')}</p><div class="ring">${t('ring')}</div>
+  <div class="bt"><button class="rb" id="dec" style="background:#ff3040">✆</button><button class="rb" id="acc" style="background:#34c759">📹</button></div></div>
+ <div id="vc"><video id="v1" loop muted autoplay playsinline></video><div id="pip"><video id="v2" loop muted autoplay playsinline></video></div>
+  <div id="vt"><b>${I.callerName}</b><span id="tm">00:00</span></div><div id="cf"></div>
+  <div id="cb"><button id="b1">⟲</button><button id="b2">🎙</button><button id="b3">📷</button><button class="rd" id="b4">✆</button></div>
+  <div id="vi"><input id="vin" placeholder="${t('vin')}" enterkeyhint="send"></div></div></div>
+<div class="scr dk" id="sp"><div class="sc">
+ ${S.cover?`<img class="cv" src="${S.cover}">`:`<div class="cv">♫</div>`}
+ <h1>${L(S.playlistName)}</h1><div class="sub">${S.creator} · ${S.songs.length}${t('songs')}</div>
+ <div class="ctl"><span>⤓</span><span>⇪</span><span>⋯</span><span style="margin-left:auto">🔀</span><button class="pb" id="pl">▶</button></div>
+ <div id="sl">${S.songs.map((s,i)=>`<div class="sr" data-i="${i}"><div><b>${s.title}</b><small>${s.artist}</small></div><span>⋮</span></div>`).join('')}</div></div>
+ <div id="mini"><div class="th"></div><div><b id="mt"></b><small id="ma"></small></div><button id="mb">❚❚</button><div id="mp"></div></div>
+ <div class="full" id="fp"><button class="cl" id="fx">⌄</button>${S.cover?`<img class="cv" src="${S.cover}">`:`<div class="cv">♫</div>`}<h2 id="ft"></h2><small id="fa"></small>
+  <input type="range" id="sk" min="0" max="100" value="0" step="0.1"><div class="tm"><span id="t1">0:00</span><span id="t2">0:00</span></div>
+  <div class="fc"><button id="sh">🔀</button><button id="pv">⏮</button><button class="pl" id="fb">❚❚</button><button id="nx">⏭</button><button id="rp">🔁</button></div></div><div class="hb"></div></div>
+<div class="scr app" id="st"><div class="sc"><div class="hd">${t('st')}</div>
+ <div class="sg"><div class="pf"><div class="av">${ini(C.userName)}</div><div>${C.userName}<small>Apple Account</small></div></div></div>
+ <div class="sg">${SET.map(r=>`<div class="sr2" ${r[3]=='L'?'id="lr"':r[3]=='K'?'id="ak"':''}><i style="background:${r[1]}">${r[2]}</i>${t(r[0])}${r[3]==1?'<span class="sw"></span>':r[3]=='L'?`<em>${lang=='ko'?'한국어':'简体中文'} ›</em>`:'<em>›</em>'}</div>`).join('')}</div></div>
+ <div class="full" id="stk" style="background:#f2f2f7"><div style="padding-top:var(--top)"><div class="bk" id="skb">‹ ${t('st')}</div><div class="hd">${t('ak')}</div><div class="sg" style="padding:14px"><input id="kin2" type="password" autocomplete="off" placeholder="${t('akh')}" style="width:100%;border:0;font-size:16px;outline:0;background:0"></div><div style="padding:0 16px"><button id="ksv" style="width:100%;border:0;border-radius:12px;background:#007aff;color:#fff;font-size:17px;padding:12px">${t('sv')}</button></div></div><div class="hb"></div></div><div class="full" id="stl"><div style="padding-top:var(--top)"><div class="bk" id="stb">‹ ${t('st')}</div><div class="hd">${t('lg')}</div>
+  <div class="sg"><div class="sr2" data-l="ko">한국어<span class="ck">${lang=='ko'?'✓':''}</span></div><div class="sr2" data-l="zh">简体中文<span class="ck">${lang=='zh'?'✓':''}</span></div></div></div><div class="hb"></div></div><div class="hb"></div></div>`;
+P.classList.toggle('fb',C.statusBar==='auto'?matchMedia('(pointer:fine)').matches:!!C.statusBar);
+bind();show(scr);tick();if(ix>=0)ui();
+}
+function show(id){scr=id;P.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id==id));P.classList.toggle('dark',['ph2','kk','st'].includes(id))}
+function tick(){const d=new Date(),h=String(d.getHours()).padStart(2,'0'),m=String(d.getMinutes()).padStart(2,'0');const a=$('lt');if(a){a.textContent=h+':'+m;$('ld').textContent=d.toLocaleDateString(lang=='ko'?'ko-KR':'zh-CN',{month:'long',day:'numeric',weekday:'long'});$('sbt').textContent=h+':'+m}}
+setInterval(tick,10000);
+const home=()=>{endCall();cur=null;show('home')};
+/* ---- AI chat ---- */
+const pop=k=>{$('alt').textContent=t(k);$('al').classList.add('on')};
+const gk=()=>{let k='';try{k=localStorage.getItem('gk')||''}catch(e){}return k||C.ai.apiKey||''};
+async function ai(f){
+ const key=gk();if(!key)return{err:'nokey'};
+ const c=[];H[f.id].forEach(x=>{const r=x.me?'user':'model',tx=L(x.text);if(c.length&&c[c.length-1].role==r)c[c.length-1].parts[0].text+='\n'+tx;else c.push({role:r,parts:[{text:tx}]})});
+ while(c.length&&c[0].role!='user')c.shift();
+ const sys=`你是${f.name}，正在KakaoTalk上和「${C.userName}」聊天。你们是彼此有好感、关系正在发展的状态。不要编造你们共同的过去事件、具体日期，也不要编造她的年龄、职业、外貌、家人等她没说过的信息；不知道的事就顺着她说的话聊，或自然地问她。
+你的人设：${f.persona.replaceAll('{u}',C.userName)}
+规则：必须直接、具体地回应她刚说的那句话（接住情绪和细节，不说无关套话，不重复自己说过的话）；始终保持角色，不提AI或设定；像真实韩国男生发KakaoTalk，每次1到3条短消息，每条一行用换行分隔；不要括号动作描写；可适度用表情和ㅋㅋ；回复语言：${lang=='ko'?'韩语（自然的口语半语）':'简体中文'}。`;
+ let err='busy';
+ for(const m of C.ai.models){
+  try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:c,generationConfig:{maxOutputTokens:1024,temperature:1}})});
+   if(r.status==429)return{err:'busy'};
+   if(r.status==400||r.status==403){const j=await r.text();if(/API key|API_KEY|PERMISSION/i.test(j))return{err:'nokey'};continue}
+   if(!r.ok)continue;
+   const j=await r.json(),tx=(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').trim();
+   if(tx)return{text:tx}}catch(e){}
+ }
+ return{err}
+}
+function renderChat(){const f=C.friends[cur];if(!f)return;const h=H[cur],lm=h.map(m=>m.me).lastIndexOf(1),lh=h.map(m=>m.me).lastIndexOf(0);
+ $('kb').innerHTML=h.map((m,i)=>m.me?`<div class="bb"><s>${i==lm&&lm>lh?'<b>1</b>':''}${L(m.time)}</s><p>${esc(L(m.text))}</p></div>`:`<div class="bl">${av(f)}<div><small>${f.name}</small><div class="rw"><p>${esc(L(m.text))}</p><s>${L(m.time)}</s></div></div></div>`).join('')+(typing==cur?`<div class="bl">${av(f)}<div><div class="rw"><p class="ty">• • •</p></div></div></div>`:'');
+ $('kb').scrollTop=1e6}
+async function send(){const v=$('kin').value.trim();if(!v||busy||cur==null)return;const id=cur,f=C.friends[id];
+ H[id].push({me:1,text:v,time:nowT()});$('kin').value='';renderChat();busy=1;await sleep(700);typing=id;cur==id&&renderChat();
+ const r=await ai(f),ps=r.text?r.text.split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,3):[];
+ if(!ps.length){typing=null;busy=0;cur==id&&renderChat();pop(r.err||'busy');return}
+ for(let i=0;i<ps.length;i++){await sleep(400+ps[i].length*35);H[id].push({me:0,text:ps[i],time:nowT()});typing=i<ps.length-1?id:null;cur==id&&renderChat()}
+ typing=null;busy=0}
+/* ---- instagram call ---- */
+function startCall(){show('ig');$('inc').style.display='block';$('vc').style.display='none'}
+function endCall(){tms.forEach(clearTimeout);tms=[];clearInterval(iv);const a=$('v1');if(a){a.pause();$('v2').pause();$('cf').innerHTML='';$('vin').value=''}}
+function addMsg(n,s){const cf=$('cf'),d=document.createElement('div');d.innerHTML='<b></b><span></span>';d.firstChild.textContent=n;d.lastChild.textContent=s;cf.appendChild(d);while(cf.children.length>5)cf.firstChild.remove();setTimeout(()=>d.style.opacity=0,6000);setTimeout(()=>d.remove(),6900)}
+/* ---- spotify state ---- */
+const SL=S.songs,au=new Audio();let ix=-1,pl=false,tt=0,shf=false,rep=false;
+const dur=()=>(SL[ix].audio&&isFinite(au.duration)?au.duration:SL[ix].dur)||180;
+function play(i){ix=i;const s=SL[i];tt=0;if(s.audio){au.src=s.audio;au.play().catch(()=>{})}else au.removeAttribute('src');pl=true;ui()}
+function ui(){document.querySelectorAll('.sr').forEach((r,i)=>{r.classList.toggle('g',i==ix);r.classList.toggle('paused',!pl);const b=r.querySelector('b');b.querySelector('.eq')?.remove();if(i==ix)b.insertAdjacentHTML('afterbegin','<span class="eq"><i></i><i></i><i></i></span>')});
+ if(ix<0)return;const s=SL[ix];$('mini').style.display='flex';$('mt').textContent=$('ft').textContent=s.title;$('ma').textContent=$('fa').textContent=s.artist;
+ const c=pl?'❚❚':'▶';$('mb').textContent=$('fb').textContent=c;$('pl').textContent=c;prog()}
+function prog(){if(ix<0)return;const d=dur();$('mp').style.width=tt/d*100+'%';$('sk').value=tt/d*100;$('t1').textContent=fmt(tt);$('t2').textContent=fmt(d)}
+function nxt(a){const n=SL.length;if(shf&&n>1){let r;do{r=Math.floor(Math.random()*n)}while(r==ix);play(r)}else play((ix+(a||1)+n)%n)}
+setInterval(()=>{if(ix<0||!pl)return;if(SL[ix].audio&&au.src)tt=au.currentTime;else tt+=.25;if(tt>=dur()-.1){rep?play(ix):nxt()}prog()},250);
+au.onended=()=>rep?play(ix):nxt();
+/* ---- wiring ---- */
+function bind(){
+ const lk=$('lock');let y0=null;
+ lk.onpointerdown=e=>y0=e.clientY;lk.onpointermove=e=>{if(y0!=null&&e.clientY-y0<-70){y0=null;show('home')}};lk.onpointerup=()=>y0=null;
+ lk.querySelector('.hb').onclick=()=>show('home');
+ P.querySelectorAll('.hb').forEach(h=>{if(!h.closest('#lock'))h.onclick=home});
+ P.querySelectorAll('[data-o]').forEach(el=>el.onclick=()=>{const o=el.dataset.o;if(o)o=='ig'?startCall():show(o)});
+ /* kakao */
+ $('me').onclick=()=>$('kp').classList.add('on');$('kx').onclick=()=>$('kp').classList.remove('on');
+ document.querySelectorAll('[data-f]').forEach(r=>r.onclick=()=>{cur=+r.dataset.f;const f=C.friends[cur];$('kav').innerHTML=av(f);$('knm').textContent=f.name;renderChat();$('kc').classList.add('on')});
+ $('kb2').onclick=()=>{$('kc').classList.remove('on');cur=null};
+ $('ks').onclick=send;$('kin').onkeydown=e=>e.key=='Enter'&&send();
+ /* instagram */
+ const v1=$('v1'),v2=$('v2');
+ $('dec').onclick=$('b4').onclick=home;
+ $('acc').onclick=()=>{$('inc').style.display='none';$('vc').style.display='block';v1.src=I.video;v2.src=I.selfVideo||'';v1.muted=true;v1.play().catch(()=>{});v2.play().catch(()=>{});
+  sec=0;$('tm').textContent='00:00';iv=setInterval(()=>{sec++;$('tm').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')},1000);
+  let at=0;I.messages.forEach(m=>{at+=(m.delay||3)*1000;tms.push(setTimeout(()=>addMsg(m.from=='我'?C.userName:C.contactName,L(m.text)),at))})};
+ v1.onclick=()=>{v1.muted=false;v1.play().catch(()=>{})};
+ $('vin').onkeydown=e=>{if(e.key=='Enter'&&e.target.value.trim()){addMsg(C.userName,e.target.value.trim());e.target.value=''}};
+ $('b1').onclick=()=>{v2.style.transform=v2.style.transform?'':'scaleX(-1)'};
+ $('b2').onclick=e=>{e.target.classList.toggle('off');v2.muted=!v2.muted};
+ $('b3').onclick=e=>{e.target.classList.toggle('off');$('pip').style.visibility=e.target.classList.contains('off')?'hidden':'visible'};
+ const pip=$('pip');let dg=null;
+ pip.onpointerdown=e=>{const r=pip.getBoundingClientRect();dg=[e.clientX-r.left,e.clientY-r.top];pip.setPointerCapture(e.pointerId)};
+ pip.onpointermove=e=>{if(!dg)return;const b=P.getBoundingClientRect();pip.style.left=Math.min(b.width-100,Math.max(0,e.clientX-b.left-dg[0]))+'px';pip.style.top=Math.min(b.height-150,Math.max(0,e.clientY-b.top-dg[1]))+'px';pip.style.right='auto'};
+ pip.onpointerup=()=>dg=null;
+ /* spotify */
+ if(S.cover)document.querySelectorAll('.th').forEach(x=>x.style.backgroundImage=`url("${S.cover}")`);
+ document.querySelectorAll('.sr').forEach(r=>r.onclick=()=>play(+r.dataset.i));
+ const tog=e=>{e&&e.stopPropagation();if(ix<0)return play(0);pl=!pl;if(SL[ix].audio){pl?au.play():au.pause()}ui()};
+ $('pl').onclick=tog;$('mb').onclick=tog;$('fb').onclick=tog;
+ $('mini').onclick=()=>$('fp').classList.add('on');$('fx').onclick=()=>$('fp').classList.remove('on');
+ $('nx').onclick=()=>nxt();$('pv').onclick=()=>tt>3?play(ix):nxt(-1);
+ $('sh').onclick=e=>{shf=!shf;e.target.classList.toggle('on',shf)};$('rp').onclick=e=>{rep=!rep;e.target.classList.toggle('on',rep)};
+ $('sk').oninput=e=>{tt=e.target.value/100*dur();if(SL[ix].audio)au.currentTime=tt;prog()};
+ $('alb').onclick=()=>$('al').classList.remove('on');
+ $('ak').onclick=()=>{$('kin2').value=gk();$('stk').classList.add('on')};$('skb').onclick=()=>$('stk').classList.remove('on');
+ $('ksv').onclick=()=>{try{localStorage.setItem('gk',$('kin2').value.trim())}catch(e){}$('ksv').textContent=t('svd');setTimeout(()=>{const b=$('ksv');if(b)b.textContent=t('sv')},1200)};
+ /* settings: language */
+ $('lr').onclick=()=>$('stl').classList.add('on');$('stb').onclick=()=>$('stl').classList.remove('on');
+ document.querySelectorAll('[data-l]').forEach(r=>r.onclick=()=>{lang=r.dataset.l;try{localStorage.setItem('lg',lang)}catch(e){}scr='st';build();$('stl').classList.add('on')});
+}
+build();
+</script></body></html>
